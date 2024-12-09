@@ -8,7 +8,6 @@ import numpy as np
 import cv2
 from sklearn.metrics.pairwise import cosine_similarity
 import threading
-from tqdm import tqdm
 
 with open('frequency.pkl', 'rb') as f:
     img_fre = pickle.load(f)
@@ -18,23 +17,41 @@ images_dir = os.path.abspath('dataset')
 root = tk.Tk()
 root.title("Frequency Matching")
 
+# Description Label
 desc_label = tk.Label(root, text="Upload an image and get similar frequency matches!", font=("Arial", 14))
 desc_label.pack(pady=10)
 
-slider_label = tk.Label(root, text="Slider Value: 5", font=("Arial", 12))
-slider_label.pack(pady=10)
+
+# Upload Image Button
+upload_button = tk.Button(root, text="Upload JPG Image", command=lambda: upload_image())
+upload_button.pack(pady=10)
+
+# Label to display the uploaded image (below the upload button)
+label = tk.Label(root)
+label.pack(pady=10)
+
 
 slider = tk.Scale(root, from_=1, to=10, orient="horizontal", length=300)
 slider.set(5)
 slider.pack(pady=10)
 
+
 # Variable to store the path of the uploaded image
 uploaded_image_path = None
 
-# Label to display "Please wait..." text between Submit and Refresh button
+# Label for "Please wait..." between Submit and Refresh buttons
 wait_label = tk.Label(root, text="", font=("Arial", 12), fg="blue")
 wait_label.pack(pady=10)
 
+# Submit Button
+submit_button = tk.Button(root, text="Submit", command=lambda: submit_action())
+submit_button.pack(pady=10)
+
+# Refresh Button
+refresh_button = tk.Button(root, text="Refresh", command=lambda: refresh_action())
+refresh_button.pack(pady=10)
+
+# Function to clear previous images and reset settings
 def clear_previous():
     global uploaded_image_path
     uploaded_image_path = None  # Reset the uploaded image path
@@ -43,11 +60,11 @@ def clear_previous():
         if isinstance(widget, tk.Frame):
             widget.destroy()
     slider.set(5)  # Reset slider to 5
-    slider_label.config(text="Slider Value: 5")
     wait_label.config(text="")
 
+# Function to upload image
 def upload_image():
-    global uploaded_image_path  # Access the global variable
+    global uploaded_image_path
     clear_previous() 
     file_path = filedialog.askopenfilename(filetypes=[("Image Files", "*.jpg;*.jpeg")])
     if file_path:
@@ -59,8 +76,8 @@ def upload_image():
         label.image = img_tk
         label.config(text="Uploaded Image", font=("Arial", 12))
         slider_value = slider.get()
-        slider_label.config(text=f"Slider Value: {slider_value}")
 
+# Function to calculate FFT of an image
 def Calculate_FFT(image_path):
     target_image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
     resized_image = cv2.resize(target_image, (100, 100))
@@ -68,6 +85,7 @@ def Calculate_FFT(image_path):
     target_fft_shifted = np.fft.fftshift(target_fft)
     return np.abs(target_fft_shifted).flatten().reshape(1, -1)
 
+# Function to display similar images
 def display_similar_images(uploaded_image_path, n):
     if not os.path.exists(images_dir):
         print("Directory 'image' not found!")
@@ -89,6 +107,7 @@ def display_similar_images(uploaded_image_path, n):
     # Clear the "Please wait..." label
     wait_label.config(text="")
 
+    # Frame to display similar images
     frame = tk.Frame(root)
     frame.pack(pady=20)
 
@@ -101,10 +120,10 @@ def display_similar_images(uploaded_image_path, n):
         img_label.image = img_tk
         img_label.grid(row=0, column=i, padx=10)
 
+# Function to handle submit action
 def submit_action():
     global uploaded_image_path
     if uploaded_image_path is None:
-        # Show an error message if no image was uploaded
         messagebox.showerror("Error", "No image uploaded! Please upload an image first.")
     else:
         img = Image.open(uploaded_image_path)
@@ -115,7 +134,6 @@ def submit_action():
         label.config(text="Uploaded Image", font=("Arial", 12))
 
         slider_value = slider.get()
-        slider_label.config(text=f"Slider Value: {slider_value}")
         
         # Show loading indicator
         wait_label.config(text="Please wait... Loading images...")
@@ -123,31 +141,14 @@ def submit_action():
         # Use threading to avoid blocking the UI
         threading.Thread(target=process_and_display, args=(uploaded_image_path, slider_value)).start()
 
+# Function to process and display the results in a separate thread
 def process_and_display(uploaded_image_path, slider_value):
-    # This function runs the heavy computation
     display_similar_images(uploaded_image_path, slider_value)
-    
-    # After the computation is complete, we can leave the images in the UI
-    # The "Please wait..." label has already been cleared in display_similar_images
 
-# Refresh action
+# Function to refresh and reset everything
 def refresh_action():
     clear_previous()  # Reset everything
     wait_label.config(text="")  # Clear the wait message
 
-# Buttons for upload, submit, and refresh
-upload_button = tk.Button(root, text="Upload JPG Image", command=upload_image)
-upload_button.pack(pady=10)
-
-# Label to display the uploaded image (between slider and upload button)
-label = tk.Label(root)
-label.pack(pady=10)
-
-submit_button = tk.Button(root, text="Submit", command=submit_action)
-submit_button.pack(pady=10)
-
-# Add a refresh button
-refresh_button = tk.Button(root, text="Refresh", command=refresh_action)
-refresh_button.pack(pady=10)
-
+# Start the main loop
 root.mainloop()
