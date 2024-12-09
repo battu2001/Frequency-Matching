@@ -1,0 +1,43 @@
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+.env/
+.venv/
+
+# Distribution and packaging
+*.egg
+*.egg-info/
+dist/
+build/
+.tox/
+.nox/
+.coverage
+.hypothesis/
+.pytest_cache/
+
+# IDE/editor files
+.idea/
+.vscode/
+.sublime/
+*.swp
+.DS_Store
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# PyCharm specific
+.idea/
+
+# MacOS
+.AppleDouble
+.LSOverride
+
+
+frequency.pkl
+dtd/
+dataset/

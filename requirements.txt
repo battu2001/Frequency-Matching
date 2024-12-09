@@ -1,0 +1,4 @@
+opencv-python==4.10.0.84
+tqdm==4.67.1
+pillow==11.0.0
+scikit-learn==1.5.2
