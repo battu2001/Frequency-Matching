@@ -4,8 +4,8 @@
 **Frequency Matching Image Search**
 
 ## Team Members:
-- Rohit
-- Meghana
+- Venkata Sai Rohith Pagadala
+- Meghana Battu
 
 ## Software Used:
 - Python 3.8+
@@ -13,9 +13,7 @@
 - NumPy
 - Tkinter
 - scikit-learn
-- Pillow
-- tqdm
-- concurrent.futures
+
 
 ## Description:
 This project allows users to upload an image, and the system calculates the Fast Fourier Transform (FFT) of the image to perform frequency-based image matching. The program finds and displays the most similar images in a dataset based on the cosine similarity of their FFTs.
