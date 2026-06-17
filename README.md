@@ -1,80 +1,171 @@
 # Frequency Matching Image Search
 
-## Project Title:
-**Frequency Matching Image Search**
+A computer vision application that performs frequency-based image similarity search using Fast Fourier Transform (FFT) and cosine similarity. Built with Python, OpenCV, NumPy, and scikit-learn with a Tkinter GUI.
 
-## Team Members:
-- Venkata Sai Rohith Pagadala
-- Meghana Battu
+---
 
-## Software Used:
+## Overview
+
+This system allows users to upload an image and instantly find the most visually similar images from a dataset — not by pixel comparison, but by comparing their **frequency domain representations** using FFT. This approach is robust to minor color and lighting variations, focusing instead on structural and textural similarity.
+
+---
+
+## How It Works
+
+```
+User uploads image
+        │
+        ▼
+Convert to grayscale + resize to 100x100
+        │
+        ▼
+Apply Fast Fourier Transform (FFT)
+        │
+        ▼
+Compute frequency magnitude spectrum
+        │
+        ▼
+Compare via cosine similarity against pre-computed dataset FFTs
+        │
+        ▼
+Return top-N most similar images
+```
+
+---
+
+## Tech Stack
+
+| Component | Technology |
+|---|---|
+| Language | Python 3.8+ |
+| Image Processing | OpenCV, NumPy |
+| Frequency Analysis | NumPy FFT (np.fft.fft2) |
+| Similarity Metric | Cosine Similarity (scikit-learn) |
+| GUI | Tkinter |
+| Performance | Parallel processing (multiprocessing) |
+| Dataset | Describing Textures Dataset (DTD) |
+
+---
+
+## Features
+
+- **FFT-based matching** — compares images in the frequency domain for structural similarity
+- **Cosine similarity** — robust similarity metric unaffected by magnitude scaling
+- **Parallel processing** — multiprocessing speeds up FFT computation across large datasets
+- **Tkinter GUI** — simple drag-and-drop interface for image upload and result display
+- **Pre-computed cache** — FFT data stored in pickle file for fast repeated queries
+
+---
+
+## Project Structure
+
+```
+Frequency-Matching/
+├── main.py                        # Tkinter GUI — image upload + similarity search
+├── generate_frequency_pkl_file.py # Pre-computes FFTs for dataset, saves to pickle
+├── arrange_images.py              # Organizes DTD dataset into working directory
+├── requirements.txt               # Python dependencies
+└── README.md
+```
+
+---
+
+## Setup & Installation
+
+### Prerequisites
+
 - Python 3.8+
-- OpenCV
-- NumPy
-- Tkinter
-- scikit-learn
+- DTD Dataset ([download here](https://www.robots.ox.ac.uk/~vgg/data/dtd/))
 
+### 1. Clone the repository
 
-## Description:
-This project allows users to upload an image, and the system calculates the Fast Fourier Transform (FFT) of the image to perform frequency-based image matching. The program finds and displays the most similar images in a dataset based on the cosine similarity of their FFTs.
+```bash
+git clone https://github.com/battu2001/Frequency-Matching.git
+cd Frequency-Matching
+```
 
-## Installation Guide:
-### Prerequisites:
-1. **Install Latest Python Version**:
-   - Ensure Python 3.8 or above is installed on your system.
-   
-2. **Install Dependencies**:
-   - Clone the repository and navigate into the project folder.
-   - Install the required Python packages using pip by running the following command:
-     ```bash
-     pip install -r requirements.txt
-     ```
+### 2. Install dependencies
 
-3. **Download the Dataset**:
-   - Download the "Describing Textures Dataset (DTD)" from [here](https://www.robots.ox.ac.uk/~vgg/data/dtd/) and unzip it into the project directory.
+```bash
+pip install -r requirements.txt
+```
 
-4. **Organize Images**:
-   - Run the script to move the images into the desired directory:
-     ```bash
-     python arrange_images.py
-     ```
+### 3. Download and organize the dataset
 
-5. **Generate Frequency Data**:
-   - Run the following script to generate the FFT data for the images and save it into a pickle file:
-     ```bash
-     python generate_frequency_pkl_file.py
-     ```
+Download the DTD dataset and unzip into the project directory, then run:
 
-6. **Run the Application**:
-   - To launch the frequency-based image matching application, run the following script:
-     ```bash
-     python main.py
-     ```
+```bash
+python arrange_images.py
+```
 
-## Expected Output:
-- When the application is run, a Tkinter window will open where the user can upload an image. The application will process the image's FFT, compare it with the images in the dataset, and display the most similar images based on cosine similarity of their frequency features.
+### 4. Pre-compute FFT data
 
-## Input Format:
-- **Required Image Format**: `.jpg` or `.jpeg`
-- **Image Dimensions**: The images will be resized to 100x100 pixels before processing.
+```bash
+python generate_frequency_pkl_file.py
+```
 
-## Operating Systems:
-- Windows
-- Linux
+This generates `frequency.pkl` — a cached file of FFT representations for all dataset images.
 
-## Notes:
-- The program utilizes parallel processing to speed up the calculation of FFTs for multiple images.
-- The GUI is built using Tkinter, allowing users to easily interact with the application.
+### 5. Run the application
 
-## References:
-- **Dataset**: [Describing Textures Dataset (DTD)](https://www.robots.ox.ac.uk/~vgg/data/dtd/)
-- **FFT Calculation**: Fast Fourier Transform (FFT) explained in detail at [Wikipedia - FFT](https://en.wikipedia.org/wiki/Fast_Fourier_transform)
-- **Cosine Similarity**: [Cosine Similarity (scikit-learn)](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.pairwise.cosine_similarity.html)
+```bash
+python main.py
+```
 
-## Code Structure:
-1. **arrange_images.py**: Organizes the images from the DTD dataset into a new directory.
-2. **generate_frequency_pkl_file.py**: Calculates the FFT of each image and stores the result in a pickle file (`frequency.pkl`).
-3. **main.py**: A Tkinter-based GUI that allows users to upload images and search for similar images based on FFT frequency matching.
+---
 
-## Comments:
-- Reasonable comments have been added throughout the code to help understand the functionality of each function and script.
+## Usage
+
+1. Launch the app — a Tkinter window opens
+2. Click **Upload Image** and select a `.jpg` or `.jpeg` file
+3. The app computes the FFT of your image and searches the dataset
+4. Top matching images are displayed ranked by cosine similarity score
+
+---
+
+## Technical Details
+
+### FFT-based Image Similarity
+
+```python
+import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
+
+def compute_fft(image):
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    resized = cv2.resize(gray, (100, 100))
+    fft = np.fft.fft2(resized)
+    magnitude = np.abs(fft).flatten()
+    return magnitude
+
+# Cosine similarity between query and dataset
+similarity = cosine_similarity([query_fft], dataset_ffts)
+```
+
+### Why FFT for Image Matching?
+
+- Pixel-based comparison is sensitive to minor shifts, rotations, and lighting
+- FFT captures **frequency content** (edges, textures, patterns) which is more stable
+- Cosine similarity normalizes for magnitude differences — only the pattern matters
+
+---
+
+## Performance
+
+| Metric | Value |
+|---|---|
+| Image resize | 100x100 px |
+| FFT computation | ~2ms per image |
+| Dataset search | Parallel (multiprocessing) |
+| Input format | .jpg / .jpeg |
+
+---
+
+## Contributors
+
+- Meghana Battu
+- Venkata Sai Rohith Pagadala
+
+*Built as part of the M.S. Computer Science program at Florida Atlantic University*
+
+---
